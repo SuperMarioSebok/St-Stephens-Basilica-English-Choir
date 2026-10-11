@@ -22,6 +22,13 @@ Singers practise their voice part at home on a phone browser: no app install, En
 | Feedback | Song + bar + comment. No name, user ID or exact time stored; reviewers see the ISO week only, shuffled within the week. |
 | Fallback | Director can upload an authorized recording + PDF. Loops by time only; slower speed only where the browser preserves pitch. |
 
+| Recruiting | Public "Come sing with us" page (hidden until a director publishes it) with countdowns, an interest form for singers, volunteers, supporters and concert guests (consent; parent or guardian for under-18s; deleted after 6 months), share buttons and QR codes. |
+| Welcome team | Private enquiry tracker: new → contacted → first rehearsal → probation → joined, with weekly counts (no names) and CSV export. |
+| Events | Concert countdowns, free reservations with capacity and cancel codes, headcount and donations reported by the parish or charity. |
+| Onboarding | One-time invite links and QR codes; the app can be added to the phone's home screen. |
+| Member survey | Anonymous one-question NPS survey; results only once 5+ members answer. |
+| Practice videos | Private MP4s per part (alone, louder) and full choir at 100% and 75%, with bar numbers on screen, plus a playlist file. |
+
 No moving score cursor yet: its visual sync is not verified, so the player shows the current bar as text instead.
 
 ## Setup (Ubuntu/Debian; macOS notes below)
@@ -67,7 +74,7 @@ Real users: `python -m bvc.cli --data-dir ../data add-user anna --role voice_lea
 ## Tests
 
 ```bash
-cd backend && python -m pytest -q        # 46 tests
+cd backend && python -m pytest -q
 cd frontend && npm test && npm run typecheck
 ```
 
@@ -82,13 +89,15 @@ at 100/75/50%**, stem onsets within 15 ms of the score timeline; measured worst 
 | Document | For whom |
 |---|---|
 | [docs/DEMO-WALKTHROUGH.md](docs/DEMO-WALKTHROUGH.md) | Anyone running the demo |
+| [docs/COMMUNITY.md](docs/COMMUNITY.md) | Recruiting page, enquiries, events and reservations, invites, member survey, practice videos |
+| [docs/content/](docs/content/) | Recruitment wording for approval, social media playbook, content calendar, approval sheet, sponsor brief draft |
 | [docs/CHANGE-MANAGEMENT.md](docs/CHANGE-MANAGEMENT.md) | Music Director, voice leads, choir committee: staged rollout, stakeholders, pilot plan |
 | [docs/TEST-CHECKLISTS.md](docs/TEST-CHECKLISTS.md) | Director and voice leads: acceptance, phone-browser and listening tests |
 | [docs/FILES-AND-RIGHTS-NEEDED.md](docs/FILES-AND-RIGHTS-NEEDED.md) | What must be supplied before real repertoire |
 | [docs/LICENSES.md](docs/LICENSES.md) | Dependency and content licence inventory |
 | [docs/PRIVACY.md](docs/PRIVACY.md) | Data collected, retention, feedback anonymity limits |
 | [docs/LIMITATIONS.md](docs/LIMITATIONS.md) | Known limitations |
-| [docs/HOW-TO-TEST.md](docs/HOW-TO-TEST.md) | Mario, Elvis, voice leads: run, share and test in plain English |
+| [docs/HOW-TO-TEST.md](docs/HOW-TO-TEST.md) | Mario, the Music Director, voice leads: run, share and test in plain English |
 | [docs/HOSTING.md](docs/HOSTING.md) | Cheapest server options and one-command setup (`deploy/`) |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | How it fits together, security design |
 | [docs/BACKLOG.md](docs/BACKLOG.md) | Phase-tagged backlog and open decisions |

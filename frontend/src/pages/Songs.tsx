@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { get, type Me, type SongItem } from "../lib/api";
+import { get, isCommunityRole, type Me, type SongItem } from "../lib/api";
+import SurveyCard from "./SurveyCard";
 
 const STATUS_TEXT: Record<string, string> = {
   draft: "Draft",
@@ -20,17 +21,19 @@ export default function Songs({ me }: { me: Me }) {
 
   if (error) return <p className="error">{error}</p>;
   if (!songs) return <p>Loading songs…</p>;
-  const staff = me.role !== "singer";
+  const staff = me.role === "director" || me.role === "voice_lead";
 
   return (
     <div className="stack">
       <h1>Songs</h1>
-      {me.role === "director" && (
+      {(me.role === "director" || isCommunityRole(me.role)) && (
         <div className="row wrap">
-          <a className="button" href="#/upload">Add a song</a>
-          <a className="button" href="#/inbox">Read feedback</a>
+          {me.role === "director" && <a className="button" href="#/upload">Add a song</a>}
+          {me.role === "director" && <a className="button" href="#/inbox">Read feedback</a>}
+          {isCommunityRole(me.role) && <a className="button primary" href="#/community">Community: enquiries, events, survey</a>}
         </div>
       )}
+      <SurveyCard />
       {songs.length === 0 && (
         <p className="muted">
           {staff ? "No songs yet." : "No approved songs yet. Your director will publish songs here."}

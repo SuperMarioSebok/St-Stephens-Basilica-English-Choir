@@ -9,7 +9,7 @@
 set -euo pipefail
 
 DOMAIN="${1:?Usage: sudo bash setup-server.sh <domain-name>}"
-REPO="${REPO:-git@github.com:SuperMarioSebok/St-Stephens-Basilica-English-Choir.git}"
+REPO="${REPO:-https://github.com/SuperMarioSebok/St-Stephens-Basilica-English-Choir.git}"
 BASE=/opt/bvc
 APP=$BASE/app
 DATA=$BASE/data
@@ -27,7 +27,7 @@ fi
 echo "== Packages"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -q
-apt-get install -y -q git python3-venv python3-pip nodejs npm fluidsynth fluid-soundfont-gm \
+apt-get install -y -q git python3-venv python3-pip nodejs npm fluidsynth fluid-soundfont-gm ffmpeg fonts-dejavu-core \
   caddy ufw unattended-upgrades sqlite3
 dpkg-reconfigure -f noninteractive unattended-upgrades
 
@@ -39,19 +39,16 @@ id bvc >/dev/null 2>&1 || useradd --system --home-dir $BASE --shell /bin/bash bv
 mkdir -p $BASE/.ssh $DATA /var/backups/bvc
 chown -R bvc:bvc $BASE && chmod 700 $BASE/.ssh $DATA
 
-echo "== Read-only GitHub deploy key"
-if [ ! -f $BASE/.ssh/id_ed25519 ]; then
-  sudo -u bvc ssh-keygen -q -t ed25519 -N "" -C "bvc-server" -f $BASE/.ssh/id_ed25519
-fi
-sudo -u bvc bash -c "ssh-keyscan -t ed25519 github.com >> $BASE/.ssh/known_hosts 2>/dev/null"
+echo "== Get the code"
 if [ ! -d $APP/.git ]; then
-  echo
-  echo "Add this key on GitHub: repository > Settings > Deploy keys > Add deploy key"
-  echo "(title: bvc-server, leave 'Allow write access' UNTICKED):"
-  echo
-  cat $BASE/.ssh/id_ed25519.pub
-  echo
-  read -rp "Press Enter once the key is added... "
+  if [[ "$REPO" == git@* ]]; then
+    # Private repository: use a read-only deploy key.
+    [ -f $BASE/.ssh/id_ed25519 ] || sudo -u bvc ssh-keygen -q -t ed25519 -N "" -C "bvc-server" -f $BASE/.ssh/id_ed25519
+    sudo -u bvc bash -c "ssh-keyscan -t ed25519 github.com >> $BASE/.ssh/known_hosts 2>/dev/null"
+    echo "Add this key on GitHub: repository > Settings > Deploy keys (leave write access UNTICKED):"
+    cat $BASE/.ssh/id_ed25519.pub
+    read -rp "Press Enter once the key is added... "
+  fi
   sudo -u bvc git clone -q "$REPO" $APP
 fi
 

@@ -4,6 +4,7 @@ import { StemPlayer, type Levels } from "../lib/engine";
 import { barIndexAt, barName, convertPosition, formatTime, loopSeconds } from "../lib/timeline";
 import ScoreView from "./ScoreView";
 import ManualPlayer from "./ManualPlayer";
+import VideoList from "./VideoList";
 
 type Mode = "solo" | "prominent" | "full";
 
@@ -258,6 +259,13 @@ function ScorePlayer({ detail, me, embedded }: { detail: VersionDetail; me: Me; 
           use the bar display above.
         </p>
       </section>
+
+      {!embedded && detail.assets.some((a) => a.kind === "video") && (
+        <details>
+          <summary>Practice videos</summary>
+          <VideoList assets={detail.assets} preferPart={part} />
+        </details>
+      )}
 
       {!embedded && (
         <a className="button" href={`#/feedback/${detail.song_id}?bar=${encodeURIComponent(bars[current].label)}`}>

@@ -8,7 +8,7 @@ export const PART_NAMES: Record<Part, string> = { S: "Soprano", A: "Alto", T: "T
 export interface Me {
   username: string;
   display_name: string;
-  role: "singer" | "voice_lead" | "director";
+  role: "singer" | "voice_lead" | "director" | "welcome" | "comms";
   voice_part: Part | null;
 }
 
@@ -27,7 +27,7 @@ export interface SongItem {
 
 export interface Asset {
   id: string;
-  kind: "stem" | "mix" | "score" | "source_audio" | "pdf";
+  kind: "stem" | "mix" | "score" | "source_audio" | "pdf" | "video" | "playlist";
   part: string | null;
   tempo: number | null;
   mime: string;
@@ -90,6 +90,7 @@ export interface VersionDetail {
   review_decision_note?: string | null;
   latest?: boolean;
   render?: { status: string; error?: string | null; attempts?: number; max_attempts?: number };
+  videos?: { status: string; error?: string | null };
   readiness?: string[];
   model?: { bars: { index: number; label: string; ticks: number; time: string }[]; tempo: { tick: number; bpm: number }[]; flags: Flag[] };
   mapping?: Record<Part, MappingEntry>;
@@ -134,3 +135,58 @@ export function postForm<T>(path: string, form: FormData): Promise<T> {
 }
 
 export const assetUrl = (id: string) => `/api/assets/${encodeURIComponent(id)}`;
+
+export function send<T>(method: "PUT" | "PATCH" | "DELETE", path: string, body?: unknown): Promise<T> {
+  return fetch(path, {
+    method,
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json", "X-BVC": "1" },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  }).then((r) => handle<T>(r));
+}
+
+// ---- Community -------------------------------------------------------------------------------
+
+export interface SiteSettings {
+  published: string;
+  choir_name: string;
+  headline: string;
+  mission: string;
+  about: string;
+  rehearsals: string;
+  what_to_expect: string;
+  join_deadline: string;
+  join_deadline_text: string;
+  support_text: string;
+  donation_url: string;
+  donation_text: string;
+  privacy_text: string;
+}
+
+export interface PublicEvent {
+  id: number;
+  title: string;
+  starts_at: string;
+  venue: string;
+  description: string;
+  rsvp_open: boolean;
+  places_left: number | null;
+}
+
+export interface PublicPage {
+  settings: SiteSettings;
+  events: PublicEvent[];
+  preview: boolean;
+}
+
+/** Where a visitor came from, e.g. ?src=whatsapp. Only the channel is kept, never who shared. */
+export function sourceParam(): string | null {
+  try {
+    return new URLSearchParams(window.location.search).get("src");
+  } catch {
+    return null;
+  }
+}
+
+export const isStaffRole = (role: Me["role"]) => role === "director" || role === "voice_lead";
+export const isCommunityRole = (role: Me["role"]) => role === "director" || role === "welcome" || role === "comms";

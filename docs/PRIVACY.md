@@ -13,8 +13,23 @@ data-protection contact review it before launch.
 | Review notes (named) | SQLite | Director, voice leads | With the song |
 | **Feedback**: song, optional bar, comment, ISO week | SQLite | Director | Suggest deleting after the pilot review (manual for now) |
 
+| **Enquiries** (public interest form): first name, email or phone, interests, voice type, message, parent or guardian's name and contact for under-18s, whether they want concert news, the channel they came from | SQLite | Directors and the welcome team | Deleted 6 months after the last status change, or when the person joins with an invite |
+| **Reservations**: first name, email or phone, number of people, the channel | SQLite | Directors and the welcome team | Deleted 30 days after the event; only the total is kept |
+| **Weekly counts** of enquiries and statuses | SQLite | Directors, welcome and comms teams | Kept; contain no names |
+| **Invites**: name, role, voice part, a hashed one-time token | SQLite | Directors | Kept with the account history |
+| **Member survey**: score 0–10 and optional comment, with no user id; separately, a keyed hash noting that a member answered | SQLite | Directors (results only once 5+ answers) | Until the survey is deleted |
+| **Friday numbers** (followers, headcounts) | SQLite | Directors, welcome and comms teams | Kept; contain no names |
+
+**Rate limiting:** the public forms count submissions per network address **in memory only** for 10 minutes, to
+stop spam. Addresses are never written to disk.
+
 **Not stored anywhere:** practice activity, what anyone played, how long, from which device; IP addresses in the
 app database; analytics; advertising or tracking cookies; recordings of singers.
+
+## Children
+Anyone who ticks "I am under 18" must give a parent or guardian's name and contact, and the parent or guardian
+must agree. The welcome team contacts the parent or guardian. No photos or videos of children are published
+without written parental consent.
 
 ## Cookies
 One strictly necessary cookie, `bvc_session` (HttpOnly, SameSite=Strict), to keep you logged in. No others.

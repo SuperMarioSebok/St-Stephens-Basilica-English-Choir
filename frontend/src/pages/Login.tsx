@@ -46,6 +46,7 @@ export default function Login({ onLoggedIn }: { onLoggedIn: () => void }) {
         </button>
       </form>
       <p className="muted small">This site uses one cookie, only to keep you logged in. No analytics.</p>
+      <p><a href="#/join">New here? Come sing with us</a></p>
     </main>
   );
 }

@@ -45,6 +45,8 @@ def _claim(conn):
 
 
 def process_job(job) -> None:
+    if job["kind"] == "video":
+        return process_video_job(job)
     with db.closing() as conn:
         v = conn.execute("SELECT * FROM versions WHERE id = ?", (job["version_id"],)).fetchone()
         if v["id"] != latest_version_id(conn, v["song_id"]) and v["status"] != "approved":
@@ -83,6 +85,40 @@ def process_job(job) -> None:
     prune_old_assets(v["song_id"])
 
 
+def process_video_job(job) -> None:
+    """Make the private practice videos for one version from its already-rendered audio."""
+    from .video import VideoError, render_videos
+    with db.closing() as conn:
+        v = conn.execute("SELECT * FROM versions WHERE id = ?", (job["version_id"],)).fetchone()
+        rows = conn.execute("SELECT kind, part, tempo, rel_path, seconds FROM assets WHERE version_id = ? AND kind IN "
+                            "('stem', 'mix')", (v["id"],)).fetchall()
+    audio = {(r["kind"], r["part"], r["tempo"]): (config.STORAGE_DIR / r["rel_path"], r["seconds"]) for r in rows}
+    out_dir = song_dir(v["song_id"]) / f"v{v['id']}" / "videos"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    def write_path(name: str):
+        path = out_dir / name
+        return path, str(path.relative_to(config.STORAGE_DIR))
+
+    try:
+        produced = render_videos(json.loads(v["model_json"]), audio, write_path)
+    except Exception as exc:  # noqa: BLE001 - every failure becomes a visible job error
+        msg = str(exc) if isinstance(exc, VideoError) else f"{type(exc).__name__}: {exc}"
+        with db.closing() as conn:
+            final = job["attempts"] + 1 >= job["max_attempts"]
+            conn.execute("UPDATE jobs SET status = ?, error = ?, finished_at = ? WHERE id = ?",
+                         ("failed" if final else "queued", msg[:500], now_iso() if final else None, job["id"]))
+        if not isinstance(exc, VideoError):
+            traceback.print_exc()
+        return
+    with db.transaction() as conn:
+        conn.execute("DELETE FROM assets WHERE version_id = ? AND kind IN ('video', 'playlist')", (v["id"],))
+        for a in produced:
+            _add_asset(conn, v["id"], a["kind"], a["part"], a["tempo"], a["rel"], a["mime"], a["seconds"])
+        conn.execute("UPDATE jobs SET status = 'done', error = NULL, finished_at = ? WHERE id = ?",
+                     (now_iso(), job["id"]))
+
+
 def prune_old_assets(song_id: int) -> None:
     """Delete generated audio of versions nobody can use any more. History rows stay."""
     with db.transaction() as conn:
@@ -90,7 +126,7 @@ def prune_old_assets(song_id: int) -> None:
             "SELECT id FROM versions WHERE song_id = ? AND (status IN ('approved', 'in_review') OR id = "
             "(SELECT MAX(id) FROM versions WHERE song_id = ?))", (song_id, song_id))}
         old = conn.execute("SELECT a.id, a.rel_path, a.version_id FROM assets a JOIN versions v ON v.id = a.version_id "
-                           "WHERE v.song_id = ? AND a.kind IN ('stem', 'mix', 'score')", (song_id,)).fetchall()
+                           "WHERE v.song_id = ? AND a.kind IN ('stem', 'mix', 'score', 'video', 'playlist')", (song_id,)).fetchall()
         for a in old:
             if a["version_id"] not in keep:
                 (config.STORAGE_DIR / a["rel_path"]).unlink(missing_ok=True)
@@ -117,10 +153,18 @@ def main() -> None:
         config.set_data_dir(args.data_dir)
     db.init()
     if args.once:
+        from .community import purge_expired
+        purge_expired()
         print(f"processed {run_once()} job(s)")
         return
     print("render worker started; Ctrl+C to stop")
+    last_purge = 0.0
     while True:
+        if time.time() - last_purge > 3600:
+            # Retention rules run hourly even if nobody opens the app.
+            from .community import purge_expired
+            purge_expired()
+            last_purge = time.time()
         if run_once() == 0:
             time.sleep(2)
 

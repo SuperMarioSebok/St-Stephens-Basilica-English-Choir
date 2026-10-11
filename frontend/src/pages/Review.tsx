@@ -3,6 +3,7 @@ import { go } from "../App";
 import { get, PART_NAMES, PARTS, post, type Me, type Part, type VersionDetail } from "../lib/api";
 import { draftFrom, entryFrom, MappingFields, type Draft } from "./MappingEditor";
 import Player from "./Player";
+import VideoList from "./VideoList";
 
 export default function Review({ versionId, me }: { versionId: number; me: Me }) {
   const [d, setD] = useState<VersionDetail | null>(null);
@@ -103,6 +104,23 @@ export default function Review({ versionId, me }: { versionId: number; me: Me })
         <section className="card">
           <h2>Listen before deciding</h2>
           <Player versionId={versionId} me={me} embedded />
+        </section>
+      )}
+
+      {d.kind === "score" && rendered && (
+        <section className="card">
+          <h2>Practice videos</h2>
+          <p className="small muted">Private videos for each part (alone, louder, full choir) at 100% and 75% speed, with the bar number on screen. Singers see them once this version is approved. Nothing is uploaded anywhere.</p>
+          <p>Status: {d.videos?.status === "none" ? "not made yet" : d.videos?.status}{d.videos?.error ? ` · ${d.videos.error}` : ""}</p>
+          <div className="row wrap">
+            {director && d.videos?.status !== "queued" && d.videos?.status !== "running" && (
+              <button onClick={() => act(post(`/api/versions/${versionId}/videos`))}>
+                {d.videos?.status === "done" ? "Make videos again" : "Make practice videos"}
+              </button>
+            )}
+            <button onClick={() => void load()}>Refresh</button>
+          </div>
+          <VideoList assets={d.assets} />
         </section>
       )}
 

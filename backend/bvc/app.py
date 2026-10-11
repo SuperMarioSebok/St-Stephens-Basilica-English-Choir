@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import mimetypes
 import random
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -17,6 +18,7 @@ from .model import ModelError, VOICE_PARTS, format_bar_tokens, timeline
 from .safe_upload import UploadError
 
 COOKIE = "bvc_session"
+mimetypes.add_type("application/manifest+json", ".webmanifest")
 
 
 @asynccontextmanager
@@ -134,7 +136,7 @@ def list_songs(user=Depends(current_user)):
             approved = workflow.approved_version(conn, s["id"])
             item = {"id": s["id"], "title": s["title"], "kind": s["kind"], "is_test_piece": bool(s["is_test_piece"]),
                     "approved_version_id": approved["id"] if approved else None}
-            if user["role"] == "singer":
+            if user["role"] not in ("director", "voice_lead"):
                 if approved is None:
                     continue
             else:
@@ -190,11 +192,12 @@ def version_detail(vid: int, user=Depends(current_user)):
             out["cursor_verified"] = False  # see docs/LIMITATIONS.md
         else:
             out["manual"] = json.loads(v["manual_json"] or "{}")
-        if user["role"] != "singer":
+        if user["role"] in ("director", "voice_lead"):
             out.update(created_at=v["created_at"], change_summary=v["change_summary"],
                        review_decision_note=v["review_decision_note"],
                        latest=v["id"] == workflow.latest_version_id(conn, v["song_id"]),
                        render=workflow.render_state(conn, vid),
+                       videos=workflow.video_state(conn, vid),
                        readiness=workflow.readiness(conn, v))
             if v["song_kind"] == "score":
                 out["model"] = model
@@ -305,6 +308,12 @@ def reject(vid: int, body: DecisionBody, user=Depends(DIRECTOR)):
     return {"ok": True}
 
 
+@app.post("/api/versions/{vid}/videos")
+def make_videos(vid: int, user=Depends(DIRECTOR)):
+    workflow.request_videos(user, vid)
+    return {"ok": True}
+
+
 @app.post("/api/versions/{vid}/rerender")
 def rerender(vid: int, user=Depends(DIRECTOR)):
     workflow.retry_render(user, vid)
@@ -354,6 +363,11 @@ def list_feedback(user=Depends(DIRECTOR)):
     random.shuffle(rows)
     rows.sort(key=lambda r: r["week"], reverse=True)
     return rows
+
+
+from .community_api import router as community_router  # noqa: E402
+
+app.include_router(community_router)
 
 
 # ---- Frontend (built files) -----------------------------------------------------------------
