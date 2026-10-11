@@ -1,0 +1,9 @@
+data/
+data-*/
+node_modules/
+frontend/dist/
+__pycache__/
+.pytest_cache/
+.venv/
+*.pyc
+.DS_Store
