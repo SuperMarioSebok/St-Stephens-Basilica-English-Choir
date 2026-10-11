@@ -1,0 +1,16 @@
+[Unit]
+Description=Basilica Voice Coach web app
+After=network.target
+
+[Service]
+User=bvc
+WorkingDirectory=/opt/bvc/app/backend
+Environment=BVC_COOKIE_SECURE=1
+ExecStart=/opt/bvc/app/backend/.venv/bin/python run_server.py --data-dir /opt/bvc/data --host 127.0.0.1 --port 8000
+Restart=on-failure
+NoNewPrivileges=true
+ProtectSystem=full
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

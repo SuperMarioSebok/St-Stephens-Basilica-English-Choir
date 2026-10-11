@@ -88,6 +88,8 @@ at 100/75/50%**, stem onsets within 15 ms of the score timeline; measured worst 
 | [docs/LICENSES.md](docs/LICENSES.md) | Dependency and content licence inventory |
 | [docs/PRIVACY.md](docs/PRIVACY.md) | Data collected, retention, feedback anonymity limits |
 | [docs/LIMITATIONS.md](docs/LIMITATIONS.md) | Known limitations |
+| [docs/HOW-TO-TEST.md](docs/HOW-TO-TEST.md) | Mario, Elvis, voice leads: run, share and test in plain English |
+| [docs/HOSTING.md](docs/HOSTING.md) | Cheapest server options and one-command setup (`deploy/`) |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | How it fits together, security design |
 | [docs/BACKLOG.md](docs/BACKLOG.md) | Phase-tagged backlog and open decisions |
 

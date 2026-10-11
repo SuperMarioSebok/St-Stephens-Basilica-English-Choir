@@ -1,0 +1,11 @@
+# Caddy gets and renews the HTTPS certificate automatically.
+# No 'log' directive: Caddy then keeps no access log, so feedback submission times are not recorded.
+__DOMAIN__ {
+	encode gzip
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Robots-Tag "noindex, nofollow"
+		-Server
+	}
+	reverse_proxy 127.0.0.1:8000
+}
