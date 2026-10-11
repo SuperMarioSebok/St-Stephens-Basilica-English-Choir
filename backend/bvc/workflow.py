@@ -99,7 +99,7 @@ def can_view_version(user, version) -> bool:
 
 
 def render_state(conn, vid: int) -> dict:
-    job = conn.execute("SELECT status, attempts, max_attempts, error FROM jobs WHERE version_id = ? "
+    job = conn.execute("SELECT status, attempts, max_attempts, error FROM jobs WHERE version_id = ? AND kind != 'video' "
                        "ORDER BY id DESC LIMIT 1", (vid,)).fetchone()
     return dict(job) if job else {"status": "none"}
 
@@ -433,6 +433,31 @@ def retry_render(user, vid: int) -> None:
             raise WorkflowError("Render already in progress")
         conn.execute("INSERT INTO jobs (version_id, kind, status, max_attempts, queued_at) VALUES (?, 'render', "
                      "'queued', ?, ?)", (vid, config.JOB_MAX_ATTEMPTS, now_iso()))
+
+
+def request_videos(user, vid: int) -> None:
+    """Queue private practice videos for a rendered version (the latest or the approved one)."""
+    require_role(user, "director")
+    with db.transaction() as conn:
+        v = get_version(conn, vid)
+        if v["song_kind"] != "score":
+            raise WorkflowError("Videos are made from scores, not uploaded recordings")
+        if v["id"] != latest_version_id(conn, v["song_id"]) and v["status"] != "approved":
+            raise WorkflowError("Make videos for the latest or the approved version")
+        if render_state(conn, vid).get("status") != "done":
+            raise WorkflowError("Render the audio first")
+        busy = conn.execute("SELECT 1 FROM jobs WHERE version_id = ? AND kind = 'video' AND status IN "
+                            "('queued', 'running')", (vid,)).fetchone()
+        if busy:
+            raise WorkflowError("Videos are already being made")
+        conn.execute("INSERT INTO jobs (version_id, kind, status, max_attempts, queued_at) VALUES (?, 'video', "
+                     "'queued', ?, ?)", (vid, config.JOB_MAX_ATTEMPTS, now_iso()))
+
+
+def video_state(conn, vid: int) -> dict:
+    job = conn.execute("SELECT status, attempts, max_attempts, error FROM jobs WHERE version_id = ? AND kind = 'video' "
+                       "ORDER BY id DESC LIMIT 1", (vid,)).fetchone()
+    return dict(job) if job else {"status": "none"}
 
 
 # ---- Feedback ------------------------------------------------------------------------

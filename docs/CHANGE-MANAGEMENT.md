@@ -23,7 +23,7 @@ and singers' privacy.
 
 | Stakeholder | Interest | Influence | What they need from us | Involvement |
 |---|---|---|---|---|
-| **Music Director** (Elvis) | Rehearsal quality, musical accuracy, own time | Decisive | Short proposal, control over approval, low workload, the right to stop | Sponsor and approver; agrees on success/stop criteria |
+| **Music Director** | Rehearsal quality, musical accuracy, own time | Decisive | Short proposal, control over approval, low workload, the right to stop | Sponsor and approver; agrees on success/stop criteria |
 | **Voice leads** (S, A, T, B) | Their section learning notes correctly | High | Editing rights for their own part only, clear workload limits, recognition | Co-testers, part owners, first-line helpers for their section |
 | **Choir members** | Learning notes easily; not being judged | Collectively high | Simple phone use, large buttons, privacy, optional | Pilot users; anonymous feedback |
 | **Choir coordinator / committee** | Organisation, communication, reputation | Medium–high | Clear plan, no extra admin, fit with the Charter | Approves communication and the rollout calendar |

@@ -37,23 +37,24 @@ Do not use the Basilica's name or domain without permission from the parish.
    ```bash
    apt-get update && apt-get install -y git
    git clone https://github.com/SuperMarioSebok/St-Stephens-Basilica-English-Choir.git /root/bvc-setup
-   # GitHub asks for your username and a personal access token (the repository is private)
+   # The repository is public, so no GitHub login is needed
    sudo bash /root/bvc-setup/deploy/setup-server.sh stephens-choir-practice.duckdns.org
    ```
-   Halfway through it prints a key and waits. On GitHub: repository → **Settings → Deploy keys → Add deploy key**,
-   paste it, keep "Allow write access" **unticked**, save, then press Enter on the server.
-   Afterwards you can delete `/root/bvc-setup`.
+   It runs for about 10–15 minutes. Afterwards you can delete `/root/bvc-setup`.
+   (If the repository is ever made private again, run it with
+   `REPO=git@github.com:SuperMarioSebok/St-Stephens-Basilica-English-Choir.git`; it will then print a read-only
+   deploy key to add under the repository's **Settings → Deploy keys**.)
 5. **Create accounts** (each asks for a password, 10+ characters):
    ```bash
    sudo bash /opt/bvc/app/deploy/add-user.sh mario director
-   sudo bash /opt/bvc/app/deploy/add-user.sh elvis director
+   sudo bash /opt/bvc/app/deploy/add-user.sh music_director director
    sudo bash /opt/bvc/app/deploy/add-user.sh lead_tenor voice_lead T
    sudo bash /opt/bvc/app/deploy/add-user.sh singer_test singer
    ```
 6. **Add the test piece**: log in as `mario`, choose **Add a song**, upload
    `fixtures/morning-light-test-piece.musicxml` from the repository, tick "test piece", and in the rights note
    write "Original test piece written for this project". Confirm the four parts, wait for the audio, approve.
-7. Open the address on your Android, then send it to Elvis.
+7. Open the address on your Android, then send it to the Music Director.
 
 ## Looking after it
 - **Update** after new code is pushed: `sudo bash /opt/bvc/app/deploy/update.sh`
@@ -67,3 +68,11 @@ Do not use the Basilica's name or domain without permission from the parish.
 ## What this does not cover
 No email sending, no payment, nothing public beyond the login page (and the page is marked "noindex" for
 search engines). Before real choir music goes on it, read `docs/FILES-AND-RIGHTS-NEEDED.md`.
+
+## Never commit to this repository
+The repository is **public**: anyone can read everything in it, including old versions. Never commit:
+- member, enquiry or guest names, phone numbers or email addresses;
+- real scores, recordings or lyrics without written permission;
+- passwords, API keys, tokens or the server's `data/` folder;
+- photos or videos of singers;
+- anyone's employer or private details.

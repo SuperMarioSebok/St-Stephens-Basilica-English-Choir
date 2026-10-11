@@ -9,6 +9,10 @@ import Feedback from "./pages/Feedback";
 import FeedbackList from "./pages/FeedbackList";
 import Upload from "./pages/Upload";
 import History from "./pages/History";
+import Join from "./pages/Join";
+import EventPage, { CancelPage } from "./pages/EventPage";
+import InvitePage from "./pages/InvitePage";
+import Community from "./pages/Community";
 
 // Hash routes keep every page on one server URL: #/play/12, #/edit/12 ...
 function useRoute(): string[] {
@@ -40,11 +44,18 @@ export default function App() {
   }, []);
   useEffect(loadMe, [loadMe]);
 
+  const [page, arg] = route;
+  const id = Number(arg);
+
+  // Public pages work without logging in.
+  if (page === "join") return <Join />;
+  if (page === "event" && id) return <EventPage eventId={id} />;
+  if (page === "cancel" && arg) return <CancelPage code={arg} />;
+  if (page === "invite" && arg) return <InvitePage token={arg} onJoined={loadMe} />;
+
   if (me === undefined) return <main className="page"><p>Loading…</p></main>;
   if (me === null) return <Login onLoggedIn={loadMe} />;
 
-  const [page, arg] = route;
-  const id = Number(arg);
   let content;
   if (page === "play" && id) content = <Player versionId={id} me={me} />;
   else if (page === "edit" && id) content = <Editor versionId={id} me={me} />;
@@ -53,6 +64,7 @@ export default function App() {
   else if (page === "feedback") content = <Feedback songId={id || undefined} />;
   else if (page === "inbox") content = <FeedbackList />;
   else if (page === "upload") content = <Upload />;
+  else if (page === "community") content = <Community me={me} />;
   else content = <Songs me={me} />;
 
   return (
