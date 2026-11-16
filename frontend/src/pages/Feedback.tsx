@@ -39,7 +39,7 @@ export default function Feedback({ songId }: { songId?: number }) {
       <div className="stack narrow">
         <h1>Thank you</h1>
         <p>Your note was sent without your name.</p>
-        <a className="button big" href="#/">Back to songs</a>
+        <a className="button big" href="#/songs">Back to songs</a>
       </div>
     );
 

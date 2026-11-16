@@ -11,7 +11,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import auth, config, db, workflow
+from . import auth, choir, config, db, workflow
 from . import musicxml_import as mxi
 from .model import ModelError, VOICE_PARTS, format_bar_tokens, timeline
 from .safe_upload import UploadError
@@ -354,6 +354,38 @@ def list_feedback(user=Depends(DIRECTOR)):
     random.shuffle(rows)
     rows.sort(key=lambda r: r["week"], reverse=True)
     return rows
+
+
+# ---- Concert dashboard: checklist, rehearsals, knowledge base -------------------------------------
+
+@app.get("/api/dashboard")
+def get_dashboard(user=Depends(current_user)):
+    return choir.dashboard(user)
+
+
+class StageBody(BaseModel):
+    repertoire_id: int
+    stage: int = Field(ge=0, le=4)
+
+
+@app.post("/api/practice")
+def set_practice_stage(body: StageBody, user=Depends(current_user)):
+    return choir.set_stage(user, body.repertoire_id, body.stage)
+
+
+class RsvpBody(BaseModel):
+    rsvp: str = Field(pattern="^(yes|no)$")
+
+
+@app.post("/api/rehearsals/{rid}/rsvp")
+def rsvp(rid: int, body: RsvpBody, user=Depends(current_user)):
+    choir.set_rsvp(user, rid, body.rsvp)
+    return {"ok": True}
+
+
+@app.get("/api/kb/search")
+def kb_search(q: str = "", user=Depends(current_user)):
+    return choir.kb_search(q[:200])
 
 
 # ---- Frontend (built files) -----------------------------------------------------------------

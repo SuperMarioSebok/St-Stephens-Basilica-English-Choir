@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ApiError, get, post, type Me } from "./lib/api";
 import Login from "./pages/Login";
 import Songs from "./pages/Songs";
+import Dashboard from "./pages/Dashboard";
 import Player from "./pages/Player";
 import Editor from "./pages/Editor";
 import Review from "./pages/Review";
@@ -53,13 +54,15 @@ export default function App() {
   else if (page === "feedback") content = <Feedback songId={id || undefined} />;
   else if (page === "inbox") content = <FeedbackList />;
   else if (page === "upload") content = <Upload />;
-  else content = <Songs me={me} />;
+  else if (page === "songs") content = <Songs me={me} />;
+  else content = <Dashboard me={me} />;
 
   return (
     <>
       <header className="topbar">
         <a href="#/" className="brand">Basilica Voice Coach</a>
         <span className="who">
+          <a href="#/songs">Songs</a>
           {me.display_name}
           <button
             className="link"

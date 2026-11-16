@@ -2,6 +2,8 @@
 
     python -m bvc.cli add-user USERNAME --role singer|voice_lead|director [--part S|A|T|B]
     python -m bvc.cli demo [--approve]     # demo accounts + the original test piece (LOCAL DEMO ONLY)
+    python -m bvc.cli seed-concert         # 2026 concert: 12 songs, rehearsals, Thursday notice
+    python -m bvc.cli kb-import FOLDER     # load .md/.txt documents into the knowledge base
 """
 from __future__ import annotations
 
@@ -10,7 +12,7 @@ import getpass
 import secrets
 from pathlib import Path
 
-from . import auth, config, db, workflow, worker
+from . import auth, choir, config, db, workflow, worker
 
 DEMO_USERS = [
     ("director", "director", None, "Director (demo)"),
@@ -63,6 +65,9 @@ def main() -> None:
     au.add_argument("--name")
     d = sub.add_parser("demo")
     d.add_argument("--approve", action="store_true")
+    sub.add_parser("seed-concert")
+    kb = sub.add_parser("kb-import")
+    kb.add_argument("folder")
     args = ap.parse_args()
     if args.data_dir:
         config.set_data_dir(args.data_dir)
@@ -73,6 +78,13 @@ def main() -> None:
         print(f"created user {uid}")
     elif args.cmd == "demo":
         demo(args.approve)
+    elif args.cmd == "seed-concert":
+        db.init()
+        print("added:", choir.seed_concert())
+    elif args.cmd == "kb-import":
+        db.init()
+        for name, n in choir.kb_import_dir(Path(args.folder)):
+            print(f"  {name}: {n} sections")
 
 
 if __name__ == "__main__":

@@ -47,6 +47,11 @@ cd ../backend
 python -m bvc.cli --data-dir ../data demo            # leaves the song as a draft to walk through
 # or: python -m bvc.cli --data-dir ../data demo --approve   # fast-forward to an approved song
 
+# 4b. Optional: 2026 Christmas concert dashboard (12-song checklist, rehearsals, Thursday notice)
+python -m bvc.cli --data-dir ../data seed-concert
+# and load choir documents (.md/.txt) into the searchable handbook
+# python -m bvc.cli --data-dir ../data kb-import /path/to/exported-docs
+
 # 5. Run (two terminals)
 python run_server.py --data-dir ../data            # http://127.0.0.1:8000
 python -m bvc.worker --data-dir ../data            # render worker (separate process)

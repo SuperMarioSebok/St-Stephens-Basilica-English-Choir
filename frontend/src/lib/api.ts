@@ -97,6 +97,32 @@ export interface VersionDetail {
   inventory?: { streams: Stream[]; parts: { id: string; name: string; staves: number }[] };
 }
 
+export interface Rehearsal {
+  id: number;
+  day: string; // YYYY-MM-DD
+  start_time: string | null; // null = not confirmed yet
+  end_time: string | null;
+  kind: "weekend" | "thursday" | "emergency";
+  note: string | null;
+  my_rsvp: "yes" | "no" | null;
+}
+
+export interface Dashboard {
+  concert: { title: string; date: string; days_left: number; schedule: [string, string][] };
+  notices: { id: number; level: "info" | "urgent"; text: string }[];
+  rehearsals: Rehearsal[];
+  songs: { id: number; position: number; title: string; stage: number; practise_version_id: number | null }[];
+  stages: string[];
+  streak: number;
+}
+
+export interface KbHit {
+  title: string;
+  url: string | null;
+  heading: string;
+  snippet: string; // matched words are wrapped in [[ ]]
+}
+
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
     super(message);

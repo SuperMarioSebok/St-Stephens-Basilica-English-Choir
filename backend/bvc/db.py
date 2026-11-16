@@ -110,6 +110,69 @@ CREATE TABLE IF NOT EXISTS feedback (
     comment TEXT NOT NULL,
     week TEXT NOT NULL                 -- ISO week only, e.g. 2026-W41
 );
+
+-- ---- Concert preparation (see choir.py) ----
+-- The concert setlist. song_id links a title to a practice song once its audio exists.
+CREATE TABLE IF NOT EXISTS repertoire (
+    id INTEGER PRIMARY KEY,
+    position INTEGER NOT NULL UNIQUE,
+    title TEXT NOT NULL,
+    song_id INTEGER REFERENCES songs(id)
+);
+
+-- Personal practice stage per song (0 = not started, 1-4 = the choir's learning stages).
+CREATE TABLE IF NOT EXISTS practice_progress (
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    repertoire_id INTEGER NOT NULL REFERENCES repertoire(id) ON DELETE CASCADE,
+    stage INTEGER NOT NULL CHECK (stage BETWEEN 0 AND 4),
+    PRIMARY KEY (user_id, repertoire_id)
+);
+
+-- One row per day a singer practised; the streak is counted from these.
+CREATE TABLE IF NOT EXISTS practice_days (
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    day TEXT NOT NULL,                 -- YYYY-MM-DD, Europe/Budapest
+    PRIMARY KEY (user_id, day)
+);
+
+CREATE TABLE IF NOT EXISTS rehearsals (
+    id INTEGER PRIMARY KEY,
+    day TEXT NOT NULL,                 -- YYYY-MM-DD, Europe/Budapest
+    start_time TEXT,                   -- HH:MM, NULL = time not confirmed yet
+    end_time TEXT,
+    kind TEXT NOT NULL CHECK (kind IN ('weekend', 'thursday', 'emergency')),
+    note TEXT,
+    cancelled INTEGER NOT NULL DEFAULT 0,
+    UNIQUE (day, kind)
+);
+
+CREATE TABLE IF NOT EXISTS attendance (
+    rehearsal_id INTEGER NOT NULL REFERENCES rehearsals(id) ON DELETE CASCADE,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    rsvp TEXT NOT NULL CHECK (rsvp IN ('yes', 'no')),
+    present INTEGER,                   -- marked by a voice lead after the rehearsal
+    PRIMARY KEY (rehearsal_id, user_id)
+);
+
+CREATE TABLE IF NOT EXISTS notices (
+    id INTEGER PRIMARY KEY,
+    level TEXT NOT NULL CHECK (level IN ('info', 'urgent')),
+    text TEXT NOT NULL,
+    active INTEGER NOT NULL DEFAULT 1
+);
+
+-- ---- Knowledge base: the choir's documents, searchable by section ----
+CREATE TABLE IF NOT EXISTS kb_docs (
+    id INTEGER PRIMARY KEY,
+    source_id TEXT NOT NULL UNIQUE,    -- e.g. gdoc:<file id> or file:<name>
+    title TEXT NOT NULL,
+    url TEXT,
+    synced_at TEXT NOT NULL
+);
+
+CREATE VIRTUAL TABLE IF NOT EXISTS kb_chunks USING fts5(
+    doc_id UNINDEXED, heading, body, tokenize = 'unicode61 remove_diacritics 2'
+);
 """
 
 
