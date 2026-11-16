@@ -3,6 +3,7 @@ import { ApiError, get, post, type Me } from "./lib/api";
 import Login from "./pages/Login";
 import Songs from "./pages/Songs";
 import Dashboard from "./pages/Dashboard";
+import Plan from "./pages/Plan";
 import Player from "./pages/Player";
 import Editor from "./pages/Editor";
 import Review from "./pages/Review";
@@ -54,6 +55,7 @@ export default function App() {
   else if (page === "feedback") content = <Feedback songId={id || undefined} />;
   else if (page === "inbox") content = <FeedbackList />;
   else if (page === "upload") content = <Upload />;
+  else if (page === "plan" && id) content = <Plan versionId={id} me={me} canPlay={route[2] === "play"} />;
   else if (page === "songs") content = <Songs me={me} />;
   else content = <Dashboard me={me} />;
 

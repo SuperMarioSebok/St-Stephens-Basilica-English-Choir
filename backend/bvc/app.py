@@ -11,7 +11,9 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import auth, choir, config, db, workflow
+from datetime import date
+
+from . import auth, choir, config, db, plan, workflow
 from . import musicxml_import as mxi
 from .model import ModelError, VOICE_PARTS, format_bar_tokens, timeline
 from .safe_upload import UploadError
@@ -386,6 +388,24 @@ def rsvp(rid: int, body: RsvpBody, user=Depends(current_user)):
 @app.get("/api/kb/search")
 def kb_search(q: str = "", user=Depends(current_user)):
     return choir.kb_search(q[:200])
+
+
+@app.get("/api/versions/{vid}/plan")
+def practice_plan(vid: int, part: str = "", minutes: int = 15, user=Depends(current_user)):
+    """Score in, practice plan out. Needs only the score, so staff can read it before audio exists."""
+    with db.closing() as conn:
+        v = workflow.get_version(conn, vid)
+        if not workflow.can_view_version(user, v):
+            raise LookupError("Version not found")
+    if v["song_kind"] != "score":
+        raise HTTPException(409, "A practice plan needs a score; this song only has a recording")
+    part = part or user["voice_part"] or "T"
+    if part not in VOICE_PARTS:
+        raise HTTPException(400, "Unknown part")
+    out = plan.build_plan(json.loads(v["model_json"]), part, choir.today(),
+                          date.fromisoformat(choir.CONCERT["date"]), minutes)
+    out["version_id"] = vid
+    return out
 
 
 # ---- Frontend (built files) -----------------------------------------------------------------

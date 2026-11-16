@@ -106,6 +106,7 @@ export default function Dashboard({ me }: { me: Me }) {
             <li key={s.id} className="card">
               <div className="row">
                 <h2 className="grow">{s.position}. {s.title}</h2>
+                {s.practise_version_id && <a className="button" href={`#/plan/${s.practise_version_id}/play`}>Plan</a>}
                 {s.practise_version_id && <a className="button primary" href={`#/play/${s.practise_version_id}`}>Practise</a>}
               </div>
               <div className="stages">

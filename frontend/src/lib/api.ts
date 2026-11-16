@@ -123,6 +123,27 @@ export interface KbHit {
   snippet: string; // matched words are wrapped in [[ ]]
 }
 
+export interface PlanStep {
+  kind?: "listen" | "learn" | "drill" | "run" | "record";
+  text?: string;
+  minutes?: number;
+  from_index?: number; // bar positions for the player's repeat range
+  to_index?: number;
+  tempo?: number;
+}
+
+export interface PracticePlan {
+  version_id: number;
+  part: Part;
+  in_piece: boolean;
+  title?: string;
+  summary?: { rating: string; bars: number; sounding_bars: number; range: string; song_minutes: number };
+  hot_spots: (PlanStep & { from_index: number; to_index: number; from_label: string; to_label: string; reasons: string[]; tempo: number })[];
+  overview: { part: Part; rating: string; tricky_bars: number; range: string }[];
+  sessions: { title: string; stage: number; day: string; minutes: number; steps: (PlanStep & { text: string })[] }[];
+  schedule?: { days_available: number; sessions_per_day: number; minutes_per_day: number; tight: boolean; deadline: string };
+}
+
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
     super(message);

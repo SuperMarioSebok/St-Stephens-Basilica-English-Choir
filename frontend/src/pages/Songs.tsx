@@ -54,6 +54,14 @@ export default function Songs({ me }: { me: Me }) {
               ) : (
                 !staff && null
               )}
+              {s.kind === "score" && (s.approved_version_id || staff) && (
+                <a
+                  className="button"
+                  href={s.approved_version_id ? `#/plan/${s.approved_version_id}/play` : `#/plan/${s.latest_version_id}`}
+                >
+                  Practice plan
+                </a>
+              )}
               {s.approved_version_id && (
                 <a className="button" href={`#/feedback/${s.id}`}>Report a problem</a>
               )}

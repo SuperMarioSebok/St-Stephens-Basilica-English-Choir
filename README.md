@@ -19,6 +19,7 @@ Singers practise their voice part at home on a phone browser: no app install, En
 | Part editor | Note list per bar (`G4:1 F#3:0.5 R:2 C4+E4:1 D5:2~`), live validation, before/after preview of single bars or ranges, or re-upload of a corrected MusicXML from which **only your part** is taken. |
 | Audio | FluidSynth renders one stem per part plus mixes (full SATB; each part prominent), at **100%, 75% and 50% tempo rendered from the score** (pitch never changes). All files of a tempo have identical length and start at tick 0. |
 | Player | Choose song and part; part alone / part louder / full choir; mute/solo; seek; repeat a bar range; slower speeds; jump to bar; score display with bar numbers (OpenSheetMusicDisplay). Stems are started together on one Web Audio clock. |
+| Practice plan | From any score, per voice part: which bars are hard and why (wide leap, note outside the key, fast notes, entry after a long rest...), then a day-by-day plan up to the concert sized to 5, 15 or 30 minutes a day. Fixed rules, no AI guessing; each step links to the player with the bars and speed preset. Staff also see all four parts side by side for rehearsal planning. |
 | Feedback | Song + bar + comment. No name, user ID or exact time stored; reviewers see the ISO week only, shuffled within the week. |
 | Fallback | Director can upload an authorized recording + PDF. Loops by time only; slower speed only where the browser preserves pitch. |
 

@@ -34,19 +34,34 @@ export default function Player({ versionId, me, embedded }: { versionId: number;
 
 function ScorePlayer({ detail, me, embedded }: { detail: VersionDetail; me: Me; embedded?: boolean }) {
   const available = PARTS.filter((p) => detail.parts?.[p]);
+  // A practice-plan link can preset part, repeat range and tempo: #/play/12?part=T&from=4&to=7&tempo=75
+  const [preset] = useState(() => {
+    const q = new URLSearchParams(window.location.hash.split("?")[1] ?? "");
+    const last = (detail.timeline?.bars.length ?? 1) - 1;
+    const bar = (k: string) => (/^\d+$/.test(q.get(k) ?? "") ? Math.min(Number(q.get(k)), last) : null);
+    const from = bar("from");
+    const to = bar("to");
+    const t = Number(q.get("tempo"));
+    const p = q.get("part") as Part | null;
+    return {
+      part: p && available.includes(p) ? p : null,
+      loop: from !== null && to !== null ? { from, to } : null,
+      tempo: detail.tempos.includes(t) ? t : 100,
+    };
+  });
   const [part, setPart] = useState<Part>(
-    me.voice_part && available.includes(me.voice_part) ? me.voice_part : available.includes("T") ? "T" : available[0],
+    preset.part ?? (me.voice_part && available.includes(me.voice_part) ? me.voice_part : available.includes("T") ? "T" : available[0]),
   );
   const [mode, setMode] = useState<Mode>("prominent");
-  const [tempo, setTempo] = useState(100);
+  const [tempo, setTempo] = useState(preset.tempo);
   const [mutes, setMutes] = useState<Set<Part>>(new Set());
   const [solos, setSolos] = useState<Set<Part>>(new Set());
   const [pos, setPos] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [loading, setLoading] = useState("");
-  const [loopOn, setLoopOn] = useState(false);
-  const [loopFrom, setLoopFrom] = useState(1);
-  const [loopTo, setLoopTo] = useState(Math.min(2, (detail.timeline?.bars.length ?? 1) - 1));
+  const [loopOn, setLoopOn] = useState(preset.loop !== null);
+  const [loopFrom, setLoopFrom] = useState(preset.loop?.from ?? 1);
+  const [loopTo, setLoopTo] = useState(preset.loop?.to ?? Math.min(2, (detail.timeline?.bars.length ?? 1) - 1));
   const [showScore, setShowScore] = useState(!embedded);
   const [err, setErr] = useState("");
   const engine = useRef<StemPlayer | null>(null);
